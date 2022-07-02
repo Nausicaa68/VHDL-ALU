@@ -1,0 +1,38 @@
+-- Code your design here
+library IEEE;
+use IEEE.std_logic_1164.all;
+
+entity UALSELOUT is
+port (
+	SEL_OUT : in std_logic_vector(1 downto 0); --permet la selection du resutat res_out
+	S : in std_logic_vector(7 downto 0);
+    mem_1_out : in std_logic_vector(7 downto 0);
+    mem_2_out : in std_logic_vector(7 downto 0);
+    res_out : out std_logic_vector(7 downto 0)
+);
+end UALSELOUT;
+
+architecture UALSELOUT_arch of UALSELOUT is
+
+begin
+  
+  MySelOut_proc : process (SEL_OUT, S, mem_1_out, mem_2_out)
+  begin
+    
+    case SEL_OUT is 
+        when "00" => -- Aucune sortie : RES_OUT = 0
+        	res_out <= (others => '0');
+        
+        when "01" => -- RES_OUT = MEM_CACHE_1
+            res_out <= mem_1_out;
+        
+        when "10" => -- RES_OUT = MEM_CACHE_2
+            res_out <= mem_2_out;
+        
+        when others => --SEL_OUT = "11" RES_OUT = S
+            res_out <= S;
+     end case;
+    
+   end process;
+    
+end UALSELOUT_arch;

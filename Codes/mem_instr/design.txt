@@ -1,0 +1,170 @@
+-- Code your design here
+library IEEE;
+use IEEE.std_logic_1164.all;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+
+entity MemInstr is
+Port ( 
+      clk : in std_logic;
+      reset : in std_logic;
+      Instr_out : out std_logic_vector (9 downto 0); --la sortie sur 10 bits contient SEL_FCT SEL_ROUTE et SEL_OUT
+      Instr_addr : in std_logic_vector (6 downto 0);--2^7 = 128 permet d'accéder à la case du tableau de memoire, son indice
+      CE_Instr : in std_logic --pour l'activation de la mémoire
+);
+end MemInstr;
+
+architecture MemInstr_Arch of MemInstr is
+
+    Type data_memory is array (0 to 127) of std_logic_vector (9 downto 0);
+    signal Instr_memory : data_memory;
+    
+begin
+
+    Instr_out <= Instr_memory(to_integer(unsigned(Instr_addr))) when falling_edge(clk) and CE_Instr = '1';
+    --comme les autres memoires on met en sortie seulement quand c'est activé
+    --Instr_out sera sur 10bits et contiendra SEL_FCT, SEL_ROUTE et SEL_OUT
+
+    -- première fonction A mult. B  RES_OUT_1 sur 8 bits
+    								 --SEL_FCT       SEL_ROUTE       SEL_OUT	
+    Instr_memory(0) <= "0000000000"; --no op         A -> Buf A      |0
+    Instr_memory(1) <= "1111011100"; --A * B         B -> Buf B      |0
+    Instr_memory(2) <= "0000111000"; --no op         S -> Mem 1      |0
+    Instr_memory(3) <= "0000000001"; --no op         A -> Buf A      |Mem 1 --ici peut importe les 2 premières instructions on veut juste afficher mem1
+    --fin des op nécessaires pour la fonction A mul. B 
+    
+    Instr_memory(4) <= "0000000000"; --on met tout le reste a 0 car on ne s'en sert pas
+    Instr_memory(5) <= "0000000000";
+    Instr_memory(6) <= "0000000000"; 
+    Instr_memory(7) <= "0000000000";
+    Instr_memory(8) <= "0000000000";
+    Instr_memory(9) <= "0000000000";
+    Instr_memory(10) <= "0000000000";
+    Instr_memory(11) <= "0000000000";
+    Instr_memory(12) <= "0000000000";
+    Instr_memory(13) <= "0000000000";
+    Instr_memory(14) <= "0000000000";
+    Instr_memory(15) <= "0000000000";
+    Instr_memory(16) <= "0000000000";
+    Instr_memory(17) <= "0000000000";
+    Instr_memory(18) <= "0000000000";
+    Instr_memory(19) <= "0000000000";
+    Instr_memory(20) <= "0000000000";
+    Instr_memory(21) <= "0000000000";
+    Instr_memory(22) <= "0000000000";
+    Instr_memory(23) <= "0000000000";
+    Instr_memory(24) <= "0000000000";
+    Instr_memory(25) <= "0000000000";
+    Instr_memory(26) <= "0000000000";
+    Instr_memory(27) <= "0000000000";
+    Instr_memory(27) <= "0000000000";
+    Instr_memory(29) <= "0000000000";
+    Instr_memory(30) <= "0000000000";
+    Instr_memory(31) <= "0000000000";
+    
+    -- deuxième fonction (A add. B) xnor A  RES_OUT_2 sur 4 bits et x_nor sur les 4 bits de poids faible
+     								  --SEL_FCT           SEL_ROUTE     SEL_OUT	
+    Instr_memory(32) <= "0000000000"; --no op             A -> Buf A    | 0
+    Instr_memory(33) <= "1101011100"; --A add B           B -> Buf B    | 0
+    Instr_memory(34) <= "0111110000"; --A xor S           S -> Buf B    | 0
+    Instr_memory(35) <= "0100110000"; --not B (xnor)      S -> Buf B    | 0
+    Instr_memory(36) <= "0000111000"; --no op             S -> Mem 1    | 0
+    Instr_memory(37) <= "0000000001"; --no op             A -> Buf A    | Mem 1
+    --fin des op nécessaires pour la fonction (A add. B) xnor A 
+    Instr_memory(38) <= "0000000000";
+    Instr_memory(39) <= "0000000000";
+    Instr_memory(40) <= "0000000000";
+    Instr_memory(41) <= "0000000000";
+    Instr_memory(42) <= "0000000000";
+    Instr_memory(43) <= "0000000000";
+    Instr_memory(44) <= "0000000000";
+    Instr_memory(45) <= "0000000000";
+    Instr_memory(46) <= "0000000000";
+    Instr_memory(47) <= "0000000000";
+    Instr_memory(48) <= "0000000000";
+    Instr_memory(49) <= "0000000000";
+    Instr_memory(50) <= "0000000000";
+    Instr_memory(51) <= "0000000000";
+    Instr_memory(52) <= "0000000000";
+    Instr_memory(53) <= "0000000000";
+    Instr_memory(54) <= "0000000000";
+    Instr_memory(55) <= "0000000000";
+    Instr_memory(56) <= "0000000000";
+    Instr_memory(57) <= "0000000000";
+    Instr_memory(58) <= "0000000000";
+    Instr_memory(59) <= "0000000000";
+    Instr_memory(60) <= "0000000000";
+    Instr_memory(61) <= "0000000000";
+    Instr_memory(62) <= "0000000000";
+    Instr_memory(63) <= "0000000000";
+    
+    -- troisème fonction (A0.B1 + A1.B0)  RES_OUT_3 sur le bit de poids faible
+     								  --SEL_FCT           SEL_ROUTE     SEL_OUT	
+    Instr_memory(64) <= "0000000000"; --no op             A -> Buf A    |0
+    Instr_memory(65) <= "1000011100"; --déc droite A      B -> Buf B    |0
+    Instr_memory(66) <= "0101010100"; --A1 and B0         S -> Buf A    |0
+    Instr_memory(67) <= "1010111000"; --déc droite B      S -> Mem 1    |0
+    Instr_memory(68) <= "0000110000"; --no op             S -> Buf B    |0
+    Instr_memory(69) <= "0101000000"; --A0 and B1         A -> Buf A    |0
+    Instr_memory(70) <= "0000110000"; --no op             S -> Buf B    |0
+    Instr_memory(71) <= "0110000100"; --Buf A or Buf B    Mem1 -> Buf A |0
+    Instr_memory(72) <= "0000111000"; --no op             S -> Mem 1    |0
+    Instr_memory(73) <= "0000000001"; --no op             A -> Buf A    |Mem1 --le dernier sel_route ne sert à rien 
+    --fin des op nécessaires pour la fonction (A0.B1 + A1.B0)
+    Instr_memory(74) <= "0000000000";
+    Instr_memory(75) <= "0000000000";
+    Instr_memory(76) <= "0000000000";
+    Instr_memory(77) <= "0000000000";
+    Instr_memory(78) <= "0000000000";
+    Instr_memory(79) <= "0000000000";
+    Instr_memory(80) <= "0000000000";
+    Instr_memory(81) <= "0000000000";
+    Instr_memory(82) <= "0000000000";
+    Instr_memory(83) <= "0000000000";
+    Instr_memory(84) <= "0000000000";
+    Instr_memory(85) <= "0000000000";
+    Instr_memory(86) <= "0000000000";
+    Instr_memory(87) <= "0000000000";
+    Instr_memory(88) <= "0000000000";
+    Instr_memory(89) <= "0000000000";
+    Instr_memory(90) <= "0000000000";
+    Instr_memory(91) <= "0000000000";
+    Instr_memory(92) <= "0000000000";
+    Instr_memory(93) <= "0000000000";
+    Instr_memory(94) <= "0000000000";
+    Instr_memory(95) <= "0000000000"; 
+    Instr_memory(96) <= "0000000000";
+    Instr_memory(97) <= "0000000000";
+    Instr_memory(98) <= "0000000000";
+    Instr_memory(99) <= "0000000000";
+    Instr_memory(100) <= "0000000000";
+    Instr_memory(101) <= "0000000000";
+    Instr_memory(102) <= "0000000000";
+    Instr_memory(103) <= "0000000000";
+    Instr_memory(104) <= "0000000000";
+    Instr_memory(105) <= "0000000000";
+    Instr_memory(106) <= "0000000000";
+    Instr_memory(107) <= "0000000000";
+    Instr_memory(108) <= "0000000000";
+    Instr_memory(109) <= "0000000000";
+    Instr_memory(110) <= "0000000000";
+    Instr_memory(111) <= "0000000000";
+    Instr_memory(112) <= "0000000000";
+    Instr_memory(113) <= "0000000000";
+    Instr_memory(114) <= "0000000000";
+    Instr_memory(115) <= "0000000000";
+    Instr_memory(116) <= "0000000000";
+    Instr_memory(117) <= "0000000000";
+    Instr_memory(118) <= "0000000000";
+    Instr_memory(119) <= "0000000000";
+    Instr_memory(120) <= "0000000000";
+    Instr_memory(121) <= "0000000000";
+    Instr_memory(122) <= "0000000000";
+    Instr_memory(123) <= "0000000000";
+    Instr_memory(124) <= "0000000000";
+    Instr_memory(125) <= "0000000000";
+    Instr_memory(126) <= "0000000000";
+    Instr_memory(127) <= "0000000000";
+
+end MemInstr_Arch;

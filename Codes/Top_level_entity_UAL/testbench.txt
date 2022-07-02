@@ -1,0 +1,104 @@
+-- Code your testbench here
+library IEEE;
+use IEEE.std_logic_1164.all;
+use IEEE.numeric_std.all;
+use IEEE.std_logic_signed.all;
+
+
+entity MCU_PRJ_2021_TopLevel_testbench is
+
+end MCU_PRJ_2021_TopLevel_testbench;
+
+architecture MCU_PRJ_2021_TopLevel_testbench_Arch of MCU_PRJ_2021_TopLevel_testbench is
+
+	-- Déclaration du composant à tester -> renvoie vers l'entité MCU_PRJ_2021_TopLevel
+    component MCU_PRJ_2021_TopLevel is
+    port (
+        CLK100MHZ : in std_logic;
+        sw : in std_logic_vector(3 downto 0);
+        btn : in std_logic_vector(3 downto 0);
+        led : out std_logic_vector(3 downto 0); 
+        led0_r : out std_logic;                
+        led1_r : out std_logic; 
+        led2_r : out std_logic;               
+        led3_r : out std_logic; 
+        led0_g : out std_logic;
+        led2_b : out std_logic;
+        led3_b : out std_logic;
+        led0_b : out std_logic;  --autres leds inutilisées
+        led1_b : out std_logic;
+        led1_g : out std_logic; 
+        led2_g : out std_logic;   
+        led3_g : out std_logic 
+    );
+    end component;
+    
+    -- Déclaration de la constante permettant de définir la période de l'horloge
+    constant PERIOD : time := 10 ns;
+    --100 Mhz donne une période de 10 ns
+    
+    -- Déclaration des signaux internes à l'architecture pour réaliser les simulations
+    signal My_sw, My_btn, My_led : std_logic_vector(3 downto 0) := (others => '0'); 
+    signal My_CLK100MHZ, My_led0_r, My_led1_r, My_led2_r, My_led3_r, My_led0_b, My_led1_b, My_led2_b, My_led3_b, My_led0_g, My_led1_g, My_led2_g, My_led3_g : std_logic := '0'; 
+
+
+begin
+	-- Instanciation du composant à tester
+    myMCU_PRJ_2021_TopLevelunderTest : MCU_PRJ_2021_TopLevel
+    --raccordement des ports du composant aux signaux dans l'architecture
+    port map (
+        CLK100MHZ => My_CLK100MHZ,
+        sw => My_sw,
+        btn => My_btn,
+        led => My_led,
+        led0_r => My_led0_r,            
+        led1_r => My_led1_r,
+        led2_r => My_led2_r,              
+        led3_r => My_led3_r,
+        led0_g => My_led0_g,
+        led2_b => My_led2_b,
+        led3_b => My_led3_b,
+        led0_b => My_led0_b,
+        led1_b => My_led1_b,
+        led1_g => My_led1_g,
+        led2_g => My_led2_g,
+        led3_g => My_led3_g
+    );
+    
+        
+    -- Définition du process permettant de générer l'horloge pour le test 
+    My_clock_Proc : process -- pas de liste de sensibilité
+    begin
+    	My_CLK100MHZ <= '0';
+        wait for PERIOD/2;
+        My_CLK100MHZ <= '1';
+        wait for PERIOD/2;
+        
+        if now = 20*PERIOD then
+        	wait;
+        end if;
+    end process;
+    
+
+    -- Définition du process permettant de faire évoluer les signaux d'entrée du composant à tester 
+    MyStimulus_Proc : process
+    begin 
+    	 
+        My_sw <= "0000"; --valeur de A et B
+        My_btn <= "0001";
+     	wait for 1 * PERIOD;
+        
+        --initialisation de l a valeur des entrées A et B
+    	My_sw <= "1100"; --valeur de A et B
+        My_btn <= "0010"; --devrait déclencher la fonction 1
+      
+        for i in 0 to 15 loop
+        report "btn = " & integer'image(to_integer(unsigned(My_btn))) & " | A et B = " & integer'image(to_integer(unsigned(My_sw))) & " | Result : " & std_logic'image(My_led(3))& std_logic'image(My_led(2))& std_logic'image(My_led(1))& std_logic'image(My_led(0)) & std_logic'image(My_led3_r)& std_logic'image(My_led2_r)& std_logic'image(My_led1_r)& std_logic'image(My_led0_r) & "||led verte :" & std_logic'image(My_led0_g) & "||retenues :" & std_logic'image(My_led3_b) & std_logic'image(My_led2_b) ;
+         wait for 1 * PERIOD;
+        end loop;
+        
+        report "Test ok (no assert ...)";
+        wait;
+    end process;
+    
+end MCU_PRJ_2021_TopLevel_testbench_Arch;   

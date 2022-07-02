@@ -1,0 +1,173 @@
+-- Code your testbench here
+library IEEE;
+use IEEE.std_logic_1164.all;
+use IEEE.numeric_std.all;
+
+-- Déclaration d'une entité pour la simulation sans ports d'entrées et de sorties
+entity UALSELROUTE_testbench is
+
+end UALSELROUTE_testbench;
+
+architecture UALSELROUTE_testbench_Arch of UALSELROUTE_testbench is
+	
+    -- Déclaration du composant à tester -> renvoie vers l'entité UALBuffers !
+    component UALSELROUTE is
+    port(
+          SEL_ROUTE : in std_logic_vector(3 downto 0);
+          S : in std_logic_vector(7 downto 0);
+          A : in std_logic_vector(3 downto 0);
+          B : in std_logic_vector(3 downto 0);
+          buff_A_out : in std_logic_vector(3 downto 0);
+          buff_B_out : in std_logic_vector(3 downto 0);
+          mem_1_out : in std_logic_vector(7 downto 0);
+          mem_2_out : in std_logic_vector(7 downto 0);
+          CE_buff_A : out std_logic;
+          CE_buff_B : out std_logic;
+          CE_mem_1 : out std_logic;
+          CE_mem_2 : out std_logic;
+          buff_A_in : out std_logic_vector(3 downto 0);
+          buff_B_in : out std_logic_vector(3 downto 0);
+          mem_1_in : out std_logic_vector(7 downto 0);
+          mem_2_in : out std_logic_vector(7 downto 0)
+    );
+    end component;
+    
+    
+    -- Déclaration des signaux internes à l'architecture pour réaliser les simulations
+    signal  mem_1_in_sim, mem_2_in_sim, mem_1_out_sim, mem_2_out_sim, S_sim : std_logic_vector(7 downto 0) := (others => '0');
+    signal buff_A_in_sim, buff_B_in_sim, buff_A_out_sim, buff_B_out_sim, A_sim, B_sim, SEL_ROUTE_sim  : std_logic_vector(3 downto 0) := (others => '0');
+    signal CE_buff_A_sim, CE_buff_B_sim, CE_mem_1_sim, CE_mem_2_sim : std_logic := '0';
+
+begin
+
+	-- Instanciation du composant à tester
+    MyUALSELROUTEunderTest : UALSELROUTE
+    -- raccordement des ports du composant aux signaux dans l'architecture 
+    port map (
+            SEL_ROUTE => SEL_ROUTE_sim,
+            S => S_sim,
+            A => A_sim,
+            B => B_sim,
+            buff_A_out => buff_A_out_sim,
+            buff_B_out => buff_B_out_sim,
+            mem_1_out => mem_1_out_sim, 
+            mem_2_out => mem_2_out_sim,
+            CE_buff_A => CE_buff_A_sim,
+            CE_buff_B => CE_buff_B_sim,
+            CE_mem_1 => CE_mem_1_sim,
+            CE_mem_2 => CE_mem_2_sim,
+            buff_A_in => buff_A_in_sim,
+            buff_B_in => buff_B_in_sim,
+            mem_1_in => mem_1_in_sim,
+            mem_2_in => mem_2_in_sim
+    );
+    
+
+    -- Définition du process permettant de faire évoluer les signaux d'entrée du composant à tester
+    MyStimulus_Proc : process -- pas de liste de sensibilité
+    begin
+    	
+        --Test SEL_ROUTE = "0000"  A_in dans buff_A
+        SEL_ROUTE_sim <= "0000";
+        S_sim <= "00000001";
+        A_sim <= "0010";
+        B_sim <= "0011";
+        buff_A_out_sim <= "0100";
+        buff_B_out_sim <= "0101";
+        mem_1_out_sim <= "00000110";
+        mem_2_out_sim <= "00000111";     
+        WAIT for 10 us;     
+        report "SEL_ROUTE = " & integer'image(to_integer(unsigned(SEL_ROUTE_sim))) & " | S = " & integer'image(to_integer(unsigned(S_sim))) & " | A = " & integer'image(to_integer(unsigned(A_sim))) & " | B = " & integer'image(to_integer(unsigned(B_sim))) & " | buff_A_out = " & integer'image(to_integer(unsigned(buff_A_out_sim))) & " | buff_B_out = " & integer'image(to_integer(unsigned(buff_B_out_sim))) & " | mem_1_out = " & integer'image(to_integer(unsigned(mem_1_out_sim))) & " | mem_2_out = " & integer'image(to_integer(unsigned(mem_2_out_sim))) & "||| Les sorties ||| buff_A_in = " & integer'image(to_integer(unsigned(buff_A_in_sim))) & " | buff_B_in = " & integer'image(to_integer(unsigned(buff_B_in_sim))) & " | mem_1_in = " & integer'image(to_integer(unsigned(mem_1_in_sim))) & " | mem_2_in = " & integer'image(to_integer(unsigned(mem_2_in_sim))) ;   
+
+
+        --Test SEL_ROUTE = "0001"  mem_1 4 bits poids faible dans buff_A
+        SEL_ROUTE_sim <= "0001";  
+        WAIT for 10 us;     
+        report "SEL_ROUTE = " & integer'image(to_integer(unsigned(SEL_ROUTE_sim))) & " | S = " & integer'image(to_integer(unsigned(S_sim))) & " | A = " & integer'image(to_integer(unsigned(A_sim))) & " | B = " & integer'image(to_integer(unsigned(B_sim))) & " | buff_A_out = " & integer'image(to_integer(unsigned(buff_A_out_sim))) & " | buff_B_out = " & integer'image(to_integer(unsigned(buff_B_out_sim))) & " | mem_1_out = " & integer'image(to_integer(unsigned(mem_1_out_sim))) & " | mem_2_out = " & integer'image(to_integer(unsigned(mem_2_out_sim))) & "||| Les sorties ||| buff_A_in = " & integer'image(to_integer(unsigned(buff_A_in_sim))) & " | buff_B_in = " & integer'image(to_integer(unsigned(buff_B_in_sim))) & " | mem_1_in = " & integer'image(to_integer(unsigned(mem_1_in_sim))) & " | mem_2_in = " & integer'image(to_integer(unsigned(mem_2_in_sim))) ;
+        
+        
+        --Test SEL_ROUTE = "0010"  mem_1 4 bits poids fort dans buff_A
+        SEL_ROUTE_sim <= "0010";  
+        WAIT for 10 us;     
+        report "SEL_ROUTE = " & integer'image(to_integer(unsigned(SEL_ROUTE_sim))) & " | S = " & integer'image(to_integer(unsigned(S_sim))) & " | A = " & integer'image(to_integer(unsigned(A_sim))) & " | B = " & integer'image(to_integer(unsigned(B_sim))) & " | buff_A_out = " & integer'image(to_integer(unsigned(buff_A_out_sim))) & " | buff_B_out = " & integer'image(to_integer(unsigned(buff_B_out_sim))) & " | mem_1_out = " & integer'image(to_integer(unsigned(mem_1_out_sim))) & " | mem_2_out = " & integer'image(to_integer(unsigned(mem_2_out_sim))) & "||| Les sorties ||| buff_A_in = " & integer'image(to_integer(unsigned(buff_A_in_sim))) & " | buff_B_in = " & integer'image(to_integer(unsigned(buff_B_in_sim))) & " | mem_1_in = " & integer'image(to_integer(unsigned(mem_1_in_sim))) & " | mem_2_in = " & integer'image(to_integer(unsigned(mem_2_in_sim))) ;   
+        
+        
+        --Test SEL_ROUTE = "0011"  mem_2 4 bits poids faible dans buff_A
+        SEL_ROUTE_sim <= "0011";  
+        WAIT for 10 us;     
+        report "SEL_ROUTE = " & integer'image(to_integer(unsigned(SEL_ROUTE_sim))) & " | S = " & integer'image(to_integer(unsigned(S_sim))) & " | A = " & integer'image(to_integer(unsigned(A_sim))) & " | B = " & integer'image(to_integer(unsigned(B_sim))) & " | buff_A_out = " & integer'image(to_integer(unsigned(buff_A_out_sim))) & " | buff_B_out = " & integer'image(to_integer(unsigned(buff_B_out_sim))) & " | mem_1_out = " & integer'image(to_integer(unsigned(mem_1_out_sim))) & " | mem_2_out = " & integer'image(to_integer(unsigned(mem_2_out_sim))) & "||| Les sorties ||| buff_A_in = " & integer'image(to_integer(unsigned(buff_A_in_sim))) & " | buff_B_in = " & integer'image(to_integer(unsigned(buff_B_in_sim))) & " | mem_1_in = " & integer'image(to_integer(unsigned(mem_1_in_sim))) & " | mem_2_in = " & integer'image(to_integer(unsigned(mem_2_in_sim))) ;  
+       
+        --Test SEL_ROUTE = "0100"  mem_2 4 bits poids fort dans buff_A
+        SEL_ROUTE_sim <= "0100";  
+        WAIT for 10 us;     
+        report "SEL_ROUTE = " & integer'image(to_integer(unsigned(SEL_ROUTE_sim))) & " | S = " & integer'image(to_integer(unsigned(S_sim))) & " | A = " & integer'image(to_integer(unsigned(A_sim))) & " | B = " & integer'image(to_integer(unsigned(B_sim))) & " | buff_A_out = " & integer'image(to_integer(unsigned(buff_A_out_sim))) & " | buff_B_out = " & integer'image(to_integer(unsigned(buff_B_out_sim))) & " | mem_1_out = " & integer'image(to_integer(unsigned(mem_1_out_sim))) & " | mem_2_out = " & integer'image(to_integer(unsigned(mem_2_out_sim))) & "||| Les sorties ||| buff_A_in = " & integer'image(to_integer(unsigned(buff_A_in_sim))) & " | buff_B_in = " & integer'image(to_integer(unsigned(buff_B_in_sim))) & " | mem_1_in = " & integer'image(to_integer(unsigned(mem_1_in_sim))) & " | mem_2_in = " & integer'image(to_integer(unsigned(mem_2_in_sim))) ;           
+
+
+        --Test SEL_ROUTE = "0101"  S 4 bits poids faible dans buff_A
+        SEL_ROUTE_sim <= "0101";  
+        WAIT for 10 us;     
+        report "SEL_ROUTE = " & integer'image(to_integer(unsigned(SEL_ROUTE_sim))) & " | S = " & integer'image(to_integer(unsigned(S_sim))) & " | A = " & integer'image(to_integer(unsigned(A_sim))) & " | B = " & integer'image(to_integer(unsigned(B_sim))) & " | buff_A_out = " & integer'image(to_integer(unsigned(buff_A_out_sim))) & " | buff_B_out = " & integer'image(to_integer(unsigned(buff_B_out_sim))) & " | mem_1_out = " & integer'image(to_integer(unsigned(mem_1_out_sim))) & " | mem_2_out = " & integer'image(to_integer(unsigned(mem_2_out_sim))) & "||| Les sorties ||| buff_A_in = " & integer'image(to_integer(unsigned(buff_A_in_sim))) & " | buff_B_in = " & integer'image(to_integer(unsigned(buff_B_in_sim))) & " | mem_1_in = " & integer'image(to_integer(unsigned(mem_1_in_sim))) & " | mem_2_in = " & integer'image(to_integer(unsigned(mem_2_in_sim))) ;  
+
+
+        --Test SEL_ROUTE = "0110"  S 4 bits poids fort dans buff_A
+        SEL_ROUTE_sim <= "0110";  
+        WAIT for 10 us;     
+        report "SEL_ROUTE = " & integer'image(to_integer(unsigned(SEL_ROUTE_sim))) & " | S = " & integer'image(to_integer(unsigned(S_sim))) & " | A = " & integer'image(to_integer(unsigned(A_sim))) & " | B = " & integer'image(to_integer(unsigned(B_sim))) & " | buff_A_out = " & integer'image(to_integer(unsigned(buff_A_out_sim))) & " | buff_B_out = " & integer'image(to_integer(unsigned(buff_B_out_sim))) & " | mem_1_out = " & integer'image(to_integer(unsigned(mem_1_out_sim))) & " | mem_2_out = " & integer'image(to_integer(unsigned(mem_2_out_sim))) & "||| Les sorties ||| buff_A_in = " & integer'image(to_integer(unsigned(buff_A_in_sim))) & " | buff_B_in = " & integer'image(to_integer(unsigned(buff_B_in_sim))) & " | mem_1_in = " & integer'image(to_integer(unsigned(mem_1_in_sim))) & " | mem_2_in = " & integer'image(to_integer(unsigned(mem_2_in_sim))) ; 
+        
+        
+        
+        --Test SEL_ROUTE = "0111"  B_in dans buff_B
+        SEL_ROUTE_sim <= "0111";  
+        WAIT for 10 us;     
+        report "SEL_ROUTE = " & integer'image(to_integer(unsigned(SEL_ROUTE_sim))) & " | S = " & integer'image(to_integer(unsigned(S_sim))) & " | A = " & integer'image(to_integer(unsigned(A_sim))) & " | B = " & integer'image(to_integer(unsigned(B_sim))) & " | buff_A_out = " & integer'image(to_integer(unsigned(buff_A_out_sim))) & " | buff_B_out = " & integer'image(to_integer(unsigned(buff_B_out_sim))) & " | mem_1_out = " & integer'image(to_integer(unsigned(mem_1_out_sim))) & " | mem_2_out = " & integer'image(to_integer(unsigned(mem_2_out_sim))) & "||| Les sorties ||| buff_A_in = " & integer'image(to_integer(unsigned(buff_A_in_sim))) & " | buff_B_in = " & integer'image(to_integer(unsigned(buff_B_in_sim))) & " | mem_1_in = " & integer'image(to_integer(unsigned(mem_1_in_sim))) & " | mem_2_in = " & integer'image(to_integer(unsigned(mem_2_in_sim))) ; 
+
+        --Test SEL_ROUTE = "1000"  mem_1 4 bits de poids faible dans buff_B
+        SEL_ROUTE_sim <= "1000";  
+        WAIT for 10 us;     
+        report "SEL_ROUTE = " & integer'image(to_integer(unsigned(SEL_ROUTE_sim))) & " | S = " & integer'image(to_integer(unsigned(S_sim))) & " | A = " & integer'image(to_integer(unsigned(A_sim))) & " | B = " & integer'image(to_integer(unsigned(B_sim))) & " | buff_A_out = " & integer'image(to_integer(unsigned(buff_A_out_sim))) & " | buff_B_out = " & integer'image(to_integer(unsigned(buff_B_out_sim))) & " | mem_1_out = " & integer'image(to_integer(unsigned(mem_1_out_sim))) & " | mem_2_out = " & integer'image(to_integer(unsigned(mem_2_out_sim))) & "||| Les sorties ||| buff_A_in = " & integer'image(to_integer(unsigned(buff_A_in_sim))) & " | buff_B_in = " & integer'image(to_integer(unsigned(buff_B_in_sim))) & " | mem_1_in = " & integer'image(to_integer(unsigned(mem_1_in_sim))) & " | mem_2_in = " & integer'image(to_integer(unsigned(mem_2_in_sim))) ; 
+        
+        
+        --Test SEL_ROUTE = "1001"  mem_1 4 bits de poids fort dans buff_B
+        SEL_ROUTE_sim <= "1001";  
+        WAIT for 10 us;     
+        report "SEL_ROUTE = " & integer'image(to_integer(unsigned(SEL_ROUTE_sim))) & " | S = " & integer'image(to_integer(unsigned(S_sim))) & " | A = " & integer'image(to_integer(unsigned(A_sim))) & " | B = " & integer'image(to_integer(unsigned(B_sim))) & " | buff_A_out = " & integer'image(to_integer(unsigned(buff_A_out_sim))) & " | buff_B_out = " & integer'image(to_integer(unsigned(buff_B_out_sim))) & " | mem_1_out = " & integer'image(to_integer(unsigned(mem_1_out_sim))) & " | mem_2_out = " & integer'image(to_integer(unsigned(mem_2_out_sim))) & "||| Les sorties ||| buff_A_in = " & integer'image(to_integer(unsigned(buff_A_in_sim))) & " | buff_B_in = " & integer'image(to_integer(unsigned(buff_B_in_sim))) & " | mem_1_in = " & integer'image(to_integer(unsigned(mem_1_in_sim))) & " | mem_2_in = " & integer'image(to_integer(unsigned(mem_2_in_sim))) ; 
+        
+        
+        --Test SEL_ROUTE = "1010"  mem_2 4 bits de poids faible dans buff_B
+        SEL_ROUTE_sim <= "1010";  
+        WAIT for 10 us;     
+        report "SEL_ROUTE = " & integer'image(to_integer(unsigned(SEL_ROUTE_sim))) & " | S = " & integer'image(to_integer(unsigned(S_sim))) & " | A = " & integer'image(to_integer(unsigned(A_sim))) & " | B = " & integer'image(to_integer(unsigned(B_sim))) & " | buff_A_out = " & integer'image(to_integer(unsigned(buff_A_out_sim))) & " | buff_B_out = " & integer'image(to_integer(unsigned(buff_B_out_sim))) & " | mem_1_out = " & integer'image(to_integer(unsigned(mem_1_out_sim))) & " | mem_2_out = " & integer'image(to_integer(unsigned(mem_2_out_sim))) & "||| Les sorties ||| buff_A_in = " & integer'image(to_integer(unsigned(buff_A_in_sim))) & " | buff_B_in = " & integer'image(to_integer(unsigned(buff_B_in_sim))) & " | mem_1_in = " & integer'image(to_integer(unsigned(mem_1_in_sim))) & " | mem_2_in = " & integer'image(to_integer(unsigned(mem_2_in_sim))) ;         
+        
+
+        --Test SEL_ROUTE = "1011"  mem_2 4 bits de poids fort dans buff_B
+        SEL_ROUTE_sim <= "1011";  
+        WAIT for 10 us;     
+        report "SEL_ROUTE = " & integer'image(to_integer(unsigned(SEL_ROUTE_sim))) & " | S = " & integer'image(to_integer(unsigned(S_sim))) & " | A = " & integer'image(to_integer(unsigned(A_sim))) & " | B = " & integer'image(to_integer(unsigned(B_sim))) & " | buff_A_out = " & integer'image(to_integer(unsigned(buff_A_out_sim))) & " | buff_B_out = " & integer'image(to_integer(unsigned(buff_B_out_sim))) & " | mem_1_out = " & integer'image(to_integer(unsigned(mem_1_out_sim))) & " | mem_2_out = " & integer'image(to_integer(unsigned(mem_2_out_sim))) & "||| Les sorties ||| buff_A_in = " & integer'image(to_integer(unsigned(buff_A_in_sim))) & " | buff_B_in = " & integer'image(to_integer(unsigned(buff_B_in_sim))) & " | mem_1_in = " & integer'image(to_integer(unsigned(mem_1_in_sim))) & " | mem_2_in = " & integer'image(to_integer(unsigned(mem_2_in_sim))) ;   
+
+        --Test SEL_ROUTE = "1100"  S 4 bits de poids faible dans buff_B
+        SEL_ROUTE_sim <= "1100";  
+        WAIT for 10 us;     
+        report "SEL_ROUTE = " & integer'image(to_integer(unsigned(SEL_ROUTE_sim))) & " | S = " & integer'image(to_integer(unsigned(S_sim))) & " | A = " & integer'image(to_integer(unsigned(A_sim))) & " | B = " & integer'image(to_integer(unsigned(B_sim))) & " | buff_A_out = " & integer'image(to_integer(unsigned(buff_A_out_sim))) & " | buff_B_out = " & integer'image(to_integer(unsigned(buff_B_out_sim))) & " | mem_1_out = " & integer'image(to_integer(unsigned(mem_1_out_sim))) & " | mem_2_out = " & integer'image(to_integer(unsigned(mem_2_out_sim))) & "||| Les sorties ||| buff_A_in = " & integer'image(to_integer(unsigned(buff_A_in_sim))) & " | buff_B_in = " & integer'image(to_integer(unsigned(buff_B_in_sim))) & " | mem_1_in = " & integer'image(to_integer(unsigned(mem_1_in_sim))) & " | mem_2_in = " & integer'image(to_integer(unsigned(mem_2_in_sim))) ;   
+
+
+        --Test SEL_ROUTE = "1101"  S 4 bits de poids fort dans buff_B
+        SEL_ROUTE_sim <= "1101";  
+        WAIT for 10 us;     
+        report "SEL_ROUTE = " & integer'image(to_integer(unsigned(SEL_ROUTE_sim))) & " | S = " & integer'image(to_integer(unsigned(S_sim))) & " | A = " & integer'image(to_integer(unsigned(A_sim))) & " | B = " & integer'image(to_integer(unsigned(B_sim))) & " | buff_A_out = " & integer'image(to_integer(unsigned(buff_A_out_sim))) & " | buff_B_out = " & integer'image(to_integer(unsigned(buff_B_out_sim))) & " | mem_1_out = " & integer'image(to_integer(unsigned(mem_1_out_sim))) & " | mem_2_out = " & integer'image(to_integer(unsigned(mem_2_out_sim))) & "||| Les sorties ||| buff_A_in = " & integer'image(to_integer(unsigned(buff_A_in_sim))) & " | buff_B_in = " & integer'image(to_integer(unsigned(buff_B_in_sim))) & " | mem_1_in = " & integer'image(to_integer(unsigned(mem_1_in_sim))) & " | mem_2_in = " & integer'image(to_integer(unsigned(mem_2_in_sim))) ;  
+        
+
+        --Test SEL_ROUTE = "1110"  S dans mem_cache_1
+        SEL_ROUTE_sim <= "1110";  
+        WAIT for 10 us;     
+        report "SEL_ROUTE = " & integer'image(to_integer(unsigned(SEL_ROUTE_sim))) & " | S = " & integer'image(to_integer(unsigned(S_sim))) & " | A = " & integer'image(to_integer(unsigned(A_sim))) & " | B = " & integer'image(to_integer(unsigned(B_sim))) & " | buff_A_out = " & integer'image(to_integer(unsigned(buff_A_out_sim))) & " | buff_B_out = " & integer'image(to_integer(unsigned(buff_B_out_sim))) & " | mem_1_out = " & integer'image(to_integer(unsigned(mem_1_out_sim))) & " | mem_2_out = " & integer'image(to_integer(unsigned(mem_2_out_sim))) & "||| Les sorties ||| buff_A_in = " & integer'image(to_integer(unsigned(buff_A_in_sim))) & " | buff_B_in = " & integer'image(to_integer(unsigned(buff_B_in_sim))) & " | mem_1_in = " & integer'image(to_integer(unsigned(mem_1_in_sim))) & " | mem_2_in = " & integer'image(to_integer(unsigned(mem_2_in_sim))) ;  
+        
+        --Test SEL_ROUTE = "1111"  S dans mem_cache_2
+        SEL_ROUTE_sim <= "1111";  
+        WAIT for 10 us;     
+        report "SEL_ROUTE = " & integer'image(to_integer(unsigned(SEL_ROUTE_sim))) & " | S = " & integer'image(to_integer(unsigned(S_sim))) & " | A = " & integer'image(to_integer(unsigned(A_sim))) & " | B = " & integer'image(to_integer(unsigned(B_sim))) & " | buff_A_out = " & integer'image(to_integer(unsigned(buff_A_out_sim))) & " | buff_B_out = " & integer'image(to_integer(unsigned(buff_B_out_sim))) & " | mem_1_out = " & integer'image(to_integer(unsigned(mem_1_out_sim))) & " | mem_2_out = " & integer'image(to_integer(unsigned(mem_2_out_sim))) & "||| Les sorties ||| buff_A_in = " & integer'image(to_integer(unsigned(buff_A_in_sim))) & " | buff_B_in = " & integer'image(to_integer(unsigned(buff_B_in_sim))) & " | mem_1_in = " & integer'image(to_integer(unsigned(mem_1_in_sim))) & " | mem_2_in = " & integer'image(to_integer(unsigned(mem_2_in_sim))) ;          
+        
+        
+        report "Test ok (no assert ...)";
+        wait;
+    end process;
+end UALSELROUTE_testbench_Arch;  

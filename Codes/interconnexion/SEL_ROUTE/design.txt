@@ -1,0 +1,155 @@
+-- Code your design here
+library IEEE;
+use IEEE.std_logic_1164.all;
+
+entity UALSELROUTE is
+port (
+	SEL_ROUTE : in std_logic_vector(3 downto 0); --permet la selection de la methode de stockage
+	S : in std_logic_vector(7 downto 0);
+    A : in std_logic_vector(3 downto 0);
+    B : in std_logic_vector(3 downto 0);
+    buff_A_out : in std_logic_vector(3 downto 0);
+    buff_B_out : in std_logic_vector(3 downto 0);
+    mem_1_out : in std_logic_vector(7 downto 0);
+    mem_2_out : in std_logic_vector(7 downto 0);
+    CE_buff_A : out std_logic;
+    CE_buff_B : out std_logic;
+    CE_mem_1 : out std_logic;
+    CE_mem_2 : out std_logic;
+    buff_A_in : out std_logic_vector(3 downto 0);
+    buff_B_in : out std_logic_vector(3 downto 0);
+    mem_1_in : out std_logic_vector(7 downto 0);
+    mem_2_in : out std_logic_vector(7 downto 0)
+);
+end UALSELROUTE;
+
+architecture UALSELROUTE_Arch of UALSELROUTE is
+
+begin
+  
+  MySelRoute_proc : process (SEL_ROUTE, S, A, B, buff_A_out, buff_B_out, mem_1_out, mem_2_out)
+  begin
+    
+    case SEL_ROUTE is
+      
+      when "0000" => -- Stockage de l'entrée A_IN dans Buffer_A
+      	CE_buff_A <= '1'; CE_buff_B <= '0';
+      	CE_mem_1 <= '0'; CE_mem_2 <= '0';
+      	buff_A_in <= A; 
+        buff_B_in <= (others => '0');
+      	mem_1_in <= (others => '0'); mem_2_in <= (others => '0');
+      
+      when "0001" => -- Stockage de MEM_CACHE_1 dans Buffer_A (4 bits de poids faibles)
+      	CE_buff_A <= '1'; CE_buff_B <= '0';
+      	CE_mem_1 <= '0'; CE_mem_2 <= '0';
+      	buff_A_in <= mem_1_out(3 downto 0); 
+        buff_B_in <= (others => '0');
+      	mem_1_in <= (others => '0'); mem_2_in <= (others => '0');
+      
+      when "0010" => -- Stockage de MEM_CACHE_1 dans Buffer_A (4 bits de poids forts)
+      	CE_buff_A <= '1'; CE_buff_B <= '0';
+      	CE_mem_1 <= '0'; CE_mem_2 <= '0';
+      	buff_A_in <= mem_1_out(7 downto 4); 
+        buff_B_in <= (others => '0');
+      	mem_1_in <= (others => '0'); mem_2_in <= (others => '0');
+      
+      when "0011" => -- Stockage de MEM_CACHE_2 dans Buffer_A (4 bits de poids faibles)
+      	CE_buff_A <= '1'; CE_buff_B <= '0';
+      	CE_mem_1 <= '0'; CE_mem_2 <= '0';
+      	buff_A_in <= mem_2_out(3 downto 0);  
+        buff_B_in <= (others => '0');
+      	mem_1_in <= (others => '0'); mem_2_in <= (others => '0');
+      
+      when "0100" => -- Stockage de MEM_CACHE_2 dans Buffer_A (4 bits de poids forts)
+      	CE_buff_A <= '1'; CE_buff_B <= '0';
+      	CE_mem_1 <= '0'; CE_mem_2 <= '0';
+      	buff_A_in <= mem_2_out(7 downto 4);  
+        buff_B_in <= (others => '0');
+      	mem_1_in <= (others => '0'); mem_2_in <= (others => '0');
+      
+      when "0101" => -- Stockage de S dans Buffer_A (4 bits de poids faibles)
+      	CE_buff_A <= '1'; CE_buff_B <= '0';
+      	CE_mem_1 <= '0'; CE_mem_2 <= '0';
+      	buff_A_in <= S(3 downto 0);
+        buff_B_in <= (others => '0');
+      	mem_1_in <= (others => '0'); mem_2_in <= (others => '0');
+      
+      when "0110" => -- Stockage de S dans Buffer_A (4 bits de poids forts)
+      	CE_buff_A <= '1'; CE_buff_B <= '0';
+      	CE_mem_1 <= '0'; CE_mem_2 <= '0';
+      	buff_A_in <= S(7 downto 4);
+        buff_B_in <= (others => '0');
+      	mem_1_in <= (others => '0'); mem_2_in <= (others => '0');
+      
+      ------
+      
+      when "0111" => -- Stockage de l'entrée B_IN dans Buffer_B
+      	CE_buff_A <= '0'; CE_buff_B <= '1';
+      	CE_mem_1 <= '0'; CE_mem_2 <= '0';
+      	buff_A_in <= (others => '0'); 
+        buff_B_in <= B;
+      	mem_1_in <= (others => '0'); mem_2_in <= (others => '0');
+      
+      when "1000" => -- Stockage de MEM_CACHE_1 dans Buffer_B (4 bits de poids faibles)
+      	CE_buff_A <= '0'; CE_buff_B <= '1';
+      	CE_mem_1 <= '0'; CE_mem_2 <= '0';
+      	buff_A_in <= (others => '0');
+        buff_B_in <= mem_1_out(3 downto 0);
+      	mem_1_in <= (others => '0'); mem_2_in <= (others => '0');
+      
+      when "1001" => -- Stockage de MEM_CACHE_1 dans Buffer_B (4 bits de poids forts)
+      	CE_buff_A <= '0'; CE_buff_B <= '1';
+      	CE_mem_1 <= '0'; CE_mem_2 <= '0';
+      	buff_A_in <= (others => '0'); 
+        buff_B_in <= mem_1_out(7 downto 4);
+      	mem_1_in <= (others => '0'); mem_2_in <= (others => '0');
+      
+      when "1010" => -- Stockage de MEM_CACHE_2 dans Buffer_B (4 bits de poids faibles)
+      	CE_buff_A <= '0'; CE_buff_B <= '1';
+      	CE_mem_1 <= '0'; CE_mem_2 <= '0';
+      	buff_A_in <= (others => '0'); 
+        buff_B_in <= mem_2_out(3 downto 0);
+      	mem_1_in <= (others => '0'); mem_2_in <= (others => '0');
+      
+      when "1011" => -- Stockage de MEM_CACHE_2 dans Buffer_B (4 bits de poids forts)
+      	CE_buff_A <= '0'; CE_buff_B <= '1';
+      	CE_mem_1 <= '0'; CE_mem_2 <= '0';
+      	buff_A_in <= (others => '0'); 
+        buff_B_in <= mem_2_out(7 downto 4);
+      	mem_1_in <= (others => '0'); mem_2_in <= (others => '0');
+      
+      when "1100" => -- Stockage de S dans Buffer_B (4 bits de poids faibles)
+      	CE_buff_A <= '0'; CE_buff_B <= '1';
+      	CE_mem_1 <= '0'; CE_mem_2 <= '0';
+      	buff_A_in <= (others => '0'); 
+        buff_B_in <= S(3 downto 0);
+      	mem_1_in <= (others => '0'); mem_2_in <= (others => '0');
+      
+      when "1101" => -- Stockage de S dans Buffer_B (4 bits de poids forts)
+      	CE_buff_A <= '0'; CE_buff_B <= '1';
+      	CE_mem_1 <= '0'; CE_mem_2 <= '0';
+      	buff_A_in <= (others => '0'); 
+        buff_B_in <= S(7 downto 4);
+      	mem_1_in <= (others => '0'); mem_2_in <= (others => '0');
+      
+      ----
+      
+      when "1110" => -- Stockage de S dans MEM_CACHE_1
+      	CE_buff_A <= '0'; CE_buff_B <= '0';
+      	CE_mem_1 <= '1'; CE_mem_2 <= '0';
+      	buff_A_in <= (others => '0'); 
+        buff_B_in <= (others => '0');
+      	mem_1_in <= S; mem_2_in <= (others => '0');
+      
+      when others =>  --"1111" Stockage de S dans MEM_CACHE_2
+      	CE_buff_A <= '0'; CE_buff_B <= '0';
+      	CE_mem_1 <= '0'; CE_mem_2 <= '1';
+      	buff_A_in <= (others => '0'); 
+        buff_B_in <= (others => '0');
+      	mem_1_in <= (others => '0'); mem_2_in <= S;
+        
+      end case;
+        
+	end process; 
+    
+end UALSELROUTE_Arch; 

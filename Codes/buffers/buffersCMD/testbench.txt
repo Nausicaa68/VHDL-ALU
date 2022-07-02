@@ -1,0 +1,83 @@
+-- Code your testbench here
+library IEEE;
+use IEEE.std_logic_1164.all;
+use IEEE.numeric_std.all;
+
+-- Déclaration d'une entité pour la simulation sans ports d'entrées et de sorties
+entity buffers_testbench is
+
+end buffers_testbench;
+
+architecture buffers_testbench_Arch of buffers_testbench is
+	
+    -- Déclaration du composant à tester -> renvoie vers l'entité UALBuffers !
+    component UALCMDBuffers is
+    port(
+          clk : in std_logic;
+          reset : in std_logic;
+          buff_SEL_FCT_in : in std_logic_vector(3 downto 0);
+          buff_SEL_OUT_in : in std_logic_vector(1 downto 0);
+          buff_SEL_FCT_out : out std_logic_vector(3 downto 0);
+          buff_SEL_OUT_out : out std_logic_vector(1 downto 0)
+    );
+    end component;
+    
+
+    -- Déclaration de la constante permettant de définir la période de l'horloge
+    constant PERIOD : time := 100 us;
+    
+    -- Déclaration des signaux internes à l'architecture pour réaliser les simulations
+    signal buff_SEL_FCT_in_sim,   buff_SEL_FCT_out_sim : std_logic_vector(3 downto 0) := (others => '0');
+    signal buff_SEL_OUT_in_sim, buff_SEL_OUT_out_sim : std_logic_vector(1 downto 0) := (others => '0');
+    signal clk_sim, reset_sim : std_logic := '0';
+
+begin
+
+	-- Instanciation du composant à tester
+    MyUALCMDBuffersunderTest : UALCMDBuffers
+    -- raccordement des ports du composant aux signaux dans l'architecture 
+    port map (
+          clk => clk_sim,
+          reset => reset_sim,
+          buff_SEL_FCT_in => buff_SEL_FCT_in_sim,
+          buff_SEL_OUT_in => buff_SEL_OUT_in_sim,
+          buff_SEL_FCT_out => buff_SEL_FCT_out_sim,
+          buff_SEL_OUT_out => buff_SEL_OUT_out_sim
+    );
+    
+    -- Définition du process permettant de générer l'horloge pour le test 
+    My_clock_Proc : process -- pas de liste de sensibilité
+    begin
+    	clk_sim <= '0';
+        wait for PERIOD/2;
+        clk_sim <= '1';
+        wait for PERIOD/2;
+        
+        if now = 20*PERIOD then
+        	wait;
+        end if;
+    end process;
+    
+    -- Définition du process permettant de faire évoluer les signaux d'entrée du composant à tester
+    MyStimulus_Proc : process -- pas de liste de sensibilité
+    begin
+    	
+        --Test du buffer avec reset
+        reset_sim <= '1';
+        buff_SEL_FCT_in_sim <= "0011";
+        buff_SEL_OUT_in_sim <= "01";
+        wait for 1 * PERIOD;
+        report "reset = " & std_logic'image(reset_sim) & " ||| SEL_FCT_in = " & integer'image(to_integer(unsigned(buff_SEL_FCT_in_sim))) & " | SEL_FCT_out = " & integer'image(to_integer(unsigned(buff_SEL_FCT_out_sim))) & " ||| SEL_OUT_in = " & integer'image(to_integer(unsigned(buff_SEL_OUT_in_sim))) & " ||| SEL_OUT_out = " & integer'image(to_integer(unsigned(buff_SEL_OUT_out_sim)))  ;
+        
+        --Test du buffer sans reset
+        reset_sim <= '0';
+        buff_SEL_FCT_in_sim <= "0011";
+        buff_SEL_OUT_in_sim <= "01";
+        wait for 1 * PERIOD;
+        report "reset = " & std_logic'image(reset_sim) & " ||| SEL_FCT_in = " & integer'image(to_integer(unsigned(buff_SEL_FCT_in_sim))) & " | SEL_FCT_out = " & integer'image(to_integer(unsigned(buff_SEL_FCT_out_sim))) & " ||| SEL_OUT_in = " & integer'image(to_integer(unsigned(buff_SEL_OUT_in_sim))) & " ||| SEL_OUT_out = " & integer'image(to_integer(unsigned(buff_SEL_OUT_out_sim)))  ;
+        
+               
+        report "Test ok (no assert ...)";
+        wait;
+    end process;
+end buffers_testbench_Arch;  

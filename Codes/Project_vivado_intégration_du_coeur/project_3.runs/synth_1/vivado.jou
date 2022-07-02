@@ -1,0 +1,12 @@
+#-----------------------------------------------------------
+# Vivado v2018.2 (64-bit)
+# SW Build 2258646 on Thu Jun 14 20:03:12 MDT 2018
+# IP Build 2256618 on Thu Jun 14 22:10:49 MDT 2018
+# Start of session at: Mon Nov 22 16:36:16 2021
+# Process ID: 3196
+# Current directory: C:/Users/utilisateur/Documents/project_3/project_3.runs/synth_1
+# Command line: vivado.exe -log MCU_PRJ_2021_TopLevel.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source MCU_PRJ_2021_TopLevel.tcl
+# Log file: C:/Users/utilisateur/Documents/project_3/project_3.runs/synth_1/MCU_PRJ_2021_TopLevel.vds
+# Journal file: C:/Users/utilisateur/Documents/project_3/project_3.runs/synth_1\vivado.jou
+#-----------------------------------------------------------
+source MCU_PRJ_2021_TopLevel.tcl -notrace

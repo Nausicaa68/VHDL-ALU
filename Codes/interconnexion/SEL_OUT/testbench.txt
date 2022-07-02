@@ -1,0 +1,90 @@
+-- Code your testbench here
+library IEEE;
+use IEEE.std_logic_1164.all;
+use IEEE.numeric_std.all;
+
+-- Déclaration d'une entité pour la simulation sans ports d'entrées et de sorties
+entity UALSELOUT_testbench is
+
+end UALSELOUT_testbench;
+
+architecture UALSELOUT_testbench_Arch of UALSELOUT_testbench is
+	
+    -- Déclaration du composant à tester -> renvoie vers l'entité UALBuffers !
+    component UALSELOUT is
+    port(
+        SEL_OUT : in std_logic_vector(1 downto 0);
+        S : in std_logic_vector(7 downto 0);
+        mem_1_out : in std_logic_vector(7 downto 0);
+        mem_2_out : in std_logic_vector(7 downto 0);
+        res_out : out std_logic_vector(7 downto 0)
+    );
+    end component;
+    
+    
+    -- Déclaration des signaux internes à l'architecture pour réaliser les simulations
+    signal S_sim, mem_1_out_sim, mem_2_out_sim, res_out_sim : std_logic_vector(7 downto 0) := (others => '0');
+    signal SEL_OUT_sim : std_logic_vector(1 downto 0) := (others => '0');
+
+begin
+
+	-- Instanciation du composant à tester
+    MyUALSELOUTunderTest : UALSELOUT
+    -- raccordement des ports du composant aux signaux dans l'architecture 
+    port map (
+            SEL_OUT => SEL_OUT_sim,
+            S => S_sim,
+            mem_1_out => mem_1_out_sim,
+            mem_2_out => mem_2_out_sim,
+            res_out => res_out_sim
+    );
+    
+
+    -- Définition du process permettant de faire évoluer les signaux d'entrée du composant à tester
+    MyStimulus_Proc : process -- pas de liste de sensibilité
+    begin
+    	
+        --Test SEL_OUT = "00"  res_out = 0 normalement
+        SEL_OUT_sim <= "00";
+        S_sim <= "00000001";
+        mem_1_out_sim <= "00000010";
+        mem_2_out_sim <= "00000011";
+        WAIT for 100 us;
+        
+        report "SEL_OUT = " & integer'image(to_integer(unsigned(SEL_OUT_sim))) & " | S = " & integer'image(to_integer(unsigned(S_sim))) & " | mem_1 = " & integer'image(to_integer(unsigned(mem_1_out_sim))) & " ||| mem_2 = " & integer'image(to_integer(unsigned(mem_2_out_sim))) & " ||| res_out = " & integer'image(to_integer(unsigned(res_out_sim)))  ;
+        
+        --Test SEL_OUT = "01"  res_out = mem_cache_1 normalement
+        SEL_OUT_sim <= "01";
+        S_sim <= "00000001";
+        mem_1_out_sim <= "00000010";
+        mem_2_out_sim <= "00000011";
+        WAIT for 100 us;
+        
+        report "SEL_OUT = " & integer'image(to_integer(unsigned(SEL_OUT_sim))) & " | S = " & integer'image(to_integer(unsigned(S_sim))) & " | mem_1 = " & integer'image(to_integer(unsigned(mem_1_out_sim))) & " ||| mem_2 = " & integer'image(to_integer(unsigned(mem_2_out_sim))) & " ||| res_out = " & integer'image(to_integer(unsigned(res_out_sim)))  ;
+        
+        
+        --Test SEL_OUT = "10"  res_out = mem_cache_2 normalement
+        SEL_OUT_sim <= "10";
+        S_sim <= "00000001";
+        mem_1_out_sim <= "00000010";
+        mem_2_out_sim <= "00000011";
+        WAIT for 100 us;
+        
+        report "SEL_OUT = " & integer'image(to_integer(unsigned(SEL_OUT_sim))) & " | S = " & integer'image(to_integer(unsigned(S_sim))) & " | mem_1 = " & integer'image(to_integer(unsigned(mem_1_out_sim))) & " ||| mem_2 = " & integer'image(to_integer(unsigned(mem_2_out_sim))) & " ||| res_out = " & integer'image(to_integer(unsigned(res_out_sim)))  ;
+        
+        
+        
+        --Test SEL_OUT = "10"  res_out = S normalement
+        SEL_OUT_sim <= "11";
+        S_sim <= "00000001";
+        mem_1_out_sim <= "00000010";
+        mem_2_out_sim <= "00000011";
+        WAIT for 100 us;
+        
+        report "SEL_OUT = " & integer'image(to_integer(unsigned(SEL_OUT_sim))) & " | S = " & integer'image(to_integer(unsigned(S_sim))) & " | mem_1 = " & integer'image(to_integer(unsigned(mem_1_out_sim))) & " ||| mem_2 = " & integer'image(to_integer(unsigned(mem_2_out_sim))) & " ||| res_out = " & integer'image(to_integer(unsigned(res_out_sim)))  ;
+        
+               
+        report "Test ok (no assert ...)";
+        wait;
+    end process;
+end UALSELOUT_testbench_Arch;  

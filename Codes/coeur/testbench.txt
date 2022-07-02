@@ -1,0 +1,86 @@
+-- Code your testbench here
+library IEEE;
+use IEEE.std_logic_1164.all;
+use IEEE.numeric_std.all;
+use IEEE.std_logic_signed.all;
+
+
+
+
+-- Déclaration d'une entité pour la simulation sans ports d'entrées et de sorties
+entity mycoeurtestbench is
+
+end mycoeurtestbench;
+
+architecture mycoeurtestbench_Arch of mycoeurtestbench is
+
+	-- Déclaration du composant à tester -> renvoie vers l'entité muxNbits2vers1 !
+    component coeur is
+    port (
+    	A : in std_logic_vector (3 downto 0); 
+        B : in std_logic_vector (3 downto 0); 
+        SR_IN_L : in std_logic;
+        SR_IN_R : in std_logic;
+        SEL_FCT : in std_logic_vector (3 downto 0);
+        S : out std_logic_vector (7 downto 0);
+        SR_OUT_L : out std_logic; 
+        SR_OUT_R : out std_logic
+    );
+    end component;
+    
+    
+    -- Déclaration des signaux internes à l'architecture pour réaliser les simulations
+    signal My_A, My_B, My_SEL_FCT : std_logic_vector(3 downto 0) := (others => '0');
+    signal My_SR_IN_L, My_SR_IN_R, My_SR_OUT_L, My_SR_OUT_R : std_logic := '0';
+    signal My_S : std_logic_vector(7 downto 0) := (others => '0');
+    
+    --compteur
+    signal my_cpt_sim : std_logic_vector(14 downto 0) := "000000000000000";
+
+begin
+	-- Instanciation du composant à tester
+    mycoeurtestbenchunderTest : coeur
+    --raccordement des ports du composant aux signaux dans l'architecture
+    port map (
+        A => My_A,
+        B => My_B,
+        SR_IN_L => My_SR_IN_L,
+        SR_IN_R => My_SR_IN_R,
+        SEL_FCT => My_SEL_FCT,
+        S => My_S,
+        SR_OUT_L => My_SR_OUT_L,
+        SR_OUT_R => My_SR_OUT_R
+    );
+    
+    
+    -- my_cpt_sim au debut "011110000000000";
+    My_A <= my_cpt_sim(3 downto 0); -- 0000
+    My_B <=  my_cpt_sim(7 downto 4);-- 0000
+    My_SR_IN_R <= my_cpt_sim(8); -- 0
+    My_SR_IN_L <= my_cpt_sim(9); -- 0
+    My_SEL_FCT <=  my_cpt_sim(13 downto 10);--1111 donc 15 en base 10
+    -- donc ce teste sera une multiplication binaire
+    -- avec toutes les valeurs de A et B, SR_IN_L et SR_IN_R possibles.
+    
+    
+    
+    -- Définition du process permettant de faire évoluer les signaux d'entrée du composant à tester 
+    MyStimulus_Proc : process -- pas de liste de sensibilité
+    begin
+	wait for 1 ns;
+    -- report "SEL_FCT=" & integer'image(to_integer(signed(My_SEL_FCT))) & " ||| S=" & integer'image(to_integer(signed(My_S))) & " | A=" & integer'image(to_integer(signed(My_A))) & " | B=" & integer'image(to_integer(signed(My_B))) & " | SR_IN_R=" & integer'image(to_integer(signed(My_SR_IN_R))) & " | SR_IN_L=" & integer'image(to_integer(signed(My_SR_IN_L))) & " | SR_OUT_R=" & integer'image(to_integer(signed(My_SR_OUT_R)))& " | SR_OUT_L=" & integer'image(to_integer(signed(My_SR_OUT_L)));
+       report "SEL_FCT=" & integer'image(to_integer(unsigned(My_SEL_FCT))) & " ||| S=" & integer'image(to_integer(signed(My_S))) & " | A=" & integer'image(to_integer(signed(My_A))) & " | B=" & integer'image(to_integer(signed(My_B)))
+& " | SR_IN_R=" & integer'image(to_integer(unsigned'('0' & My_SR_IN_R)))
+& " | SR_IN_L=" & integer'image(to_integer(unsigned'('0' & My_SR_IN_L)))
+& " | SR_OUT_R=" & integer'image(to_integer(unsigned'('0' & My_SR_OUT_R)))
+& " | SR_OUT_L=" & integer'image(to_integer(unsigned'('0' & My_SR_OUT_L)));
+    
+    	WAIT FOR 1 ns;
+        if(my_cpt_sim(14) = '1') then
+        	WAIT;
+        else
+        	my_cpt_sim <= my_cpt_sim+1;
+        end if; 
+    end process;  
+    
+end mycoeurtestbench_Arch;  

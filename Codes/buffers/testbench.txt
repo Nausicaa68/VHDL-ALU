@@ -1,0 +1,132 @@
+-- Code your testbench here
+library IEEE;
+use IEEE.std_logic_1164.all;
+use IEEE.numeric_std.all;
+
+-- Déclaration d'une entité pour la simulation sans ports d'entrées et de sorties
+entity buffers_testbench is
+
+end buffers_testbench;
+
+architecture buffers_testbench_Arch of buffers_testbench is
+	
+    -- Déclaration du composant à tester -> renvoie vers l'entité UALBuffers !
+    component UALBuffers is
+    port(
+        clk : in std_logic;
+        reset : in std_logic;
+        buff_A_in : in std_logic_vector(3 downto 0);
+        buff_B_in : in std_logic_vector(3 downto 0);
+        mem_1_in : in std_logic_vector(7 downto 0);
+        mem_2_in : in std_logic_vector(7 downto 0);
+        buff_SR_IN_L_in : in std_logic;
+        buff_SR_IN_R_in : in std_logic;
+        CE_buff_A : in std_logic;
+        CE_buff_B : in std_logic;
+        CE_mem_1 : in std_logic;
+        CE_mem_2 : in std_logic;
+        CE_SR_IN_L : in std_logic;
+        CE_SR_IN_R : in std_logic;
+        buff_A_out : out  std_logic_vector(3 downto 0);
+        buff_B_out : out  std_logic_vector(3 downto 0);
+        mem_1_out : out  std_logic_vector(7 downto 0);
+        mem_2_out : out  std_logic_vector(7 downto 0);
+        buff_SR_IN_L_out : out std_logic;
+        buff_SR_IN_R_out : out std_logic 
+    );
+    end component;
+    
+
+    -- Déclaration de la constante permettant de définir la période de l'horloge
+    constant PERIOD : time := 100 us;
+    
+    -- Déclaration des signaux internes à l'architecture pour réaliser les simulations
+    signal buff_A_in_sim, buff_B_in_sim, buff_A_out_sim, buff_B_out_sim : std_logic_vector(3 downto 0) := (others => '0');
+    signal mem_1_in_sim, mem_2_in_sim, mem_1_out_sim, mem_2_out_sim : std_logic_vector(7 downto 0) := (others => '0');
+    signal clk_sim, reset_sim, buff_SR_IN_L_in_sim, buff_SR_IN_R_in_sim, CE_buff_A_sim, CE_buff_B_sim, CE_mem_1_sim, CE_mem_2_sim, CE_SR_IN_L_sim, CE_SR_IN_R_sim, buff_SR_IN_L_out_sim, buff_SR_IN_R_out_sim : std_logic := '0';
+
+begin
+
+	-- Instanciation du composant à tester
+    MyUALBuffersunderTest : UALBuffers
+    -- raccordement des ports du composant aux signaux dans l'architecture 
+    port map (
+        clk =>  clk_sim,
+        reset =>  reset_sim,
+        buff_A_in =>  buff_A_in_sim, 
+        buff_B_in =>  buff_B_in_sim,
+        mem_1_in =>  mem_1_in_sim,
+        mem_2_in =>  mem_2_in_sim,
+        buff_SR_IN_L_in =>  buff_SR_IN_L_in_sim,
+        buff_SR_IN_R_in =>  buff_SR_IN_R_in_sim,
+        CE_buff_A =>  CE_buff_A_sim,
+        CE_buff_B =>  CE_buff_B_sim,
+        CE_mem_1 =>   CE_mem_1_sim,
+        CE_mem_2 =>   CE_mem_2_sim,
+        CE_SR_IN_L => CE_SR_IN_L_sim,
+        CE_SR_IN_R => CE_SR_IN_R_sim, 
+        buff_A_out => buff_A_out_sim, 
+        buff_B_out => buff_B_out_sim, 
+        mem_1_out =>  mem_1_out_sim,
+        mem_2_out =>  mem_2_out_sim,
+        buff_SR_IN_L_out => buff_SR_IN_L_out_sim,  
+        buff_SR_IN_R_out => buff_SR_IN_R_out_sim
+    );
+    
+    -- Définition du process permettant de générer l'horloge pour le test 
+    My_clock_Proc : process -- pas de liste de sensibilité
+    begin
+    	clk_sim <= '0';
+        wait for PERIOD/2;
+        clk_sim <= '1';
+        wait for PERIOD/2;
+        
+        if now = 20*PERIOD then
+        	wait;
+        end if;
+    end process;
+    
+    -- Définition du process permettant de faire évoluer les signaux d'entrée du composant à tester
+    MyStimulus_Proc : process -- pas de liste de sensibilité
+    begin
+    	
+        --Test du buffer A avec reset
+        reset_sim <= '1';
+        CE_buff_A_sim <= '1';
+        buff_A_in_sim <= "0011";
+        wait for 1 * PERIOD;
+        report "reset = " & std_logic'image(reset_sim) & " ||| Buff_A_in = " & integer'image(to_integer(unsigned(buff_A_in_sim))) & " | Buff_A_out = " & integer'image(to_integer(unsigned(buff_A_out_sim)));
+        
+        --Test du buffer A sans reset et CE activé
+        reset_sim <= '0';
+        CE_buff_A_sim <= '1';
+        buff_A_in_sim <= "0011";
+        wait for 1 * PERIOD;
+        report "reset = " & std_logic'image(reset_sim) & " ||| Buff_A_in = " & integer'image(to_integer(unsigned(buff_A_in_sim))) & " | Buff_A_out = " & integer'image(to_integer(unsigned(buff_A_out_sim)));
+        
+         --Test du buffer SR_IN_L avec CE activé
+        reset_sim <= '0';
+        CE_SR_IN_L_sim <= '1';
+        buff_SR_IN_L_in_sim <= '1';
+        wait for 1 * PERIOD;
+        report "reset = " & std_logic'image(reset_sim) & " ||| Buff_SR_IN_L_in = " & std_logic'image(buff_SR_IN_L_in_sim) & " | Buff_SR_IN_L_out = " & std_logic'image(buff_SR_IN_L_out_sim);     
+        
+        --Test du buffer SR_IN_L avec CE désactivé cela devrait rester à 1
+        reset_sim <= '0';
+        CE_SR_IN_L_sim <= '0';
+        buff_SR_IN_L_in_sim <= '0';
+        wait for 1 * PERIOD;
+        report "reset = " & std_logic'image(reset_sim) & " ||| Buff_SR_IN_L_in = " & std_logic'image(buff_SR_IN_L_in_sim) & " | Buff_SR_IN_L_out = " & std_logic'image(buff_SR_IN_L_out_sim); 
+        
+        
+        --Test du mem1 CE activé et pas de reset
+        reset_sim <= '0';
+        CE_mem_1_sim <= '1';
+        mem_1_in_sim <= "11110011";
+        wait for 1 * PERIOD;
+        report "reset = " & std_logic'image(reset_sim) & " ||| mem_1_in = " & integer'image(to_integer(unsigned(mem_1_in_sim))) & " | mem_1_out = " & integer'image(to_integer(unsigned(mem_1_out_sim)));
+               
+        report "Test ok (no assert ...)";
+        wait;
+    end process;
+end buffers_testbench_Arch;  

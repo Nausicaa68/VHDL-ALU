@@ -1,0 +1,336 @@
+library IEEE;
+use IEEE.std_logic_1164.ALL;
+use IEEE.std_logic_unsigned.ALL;
+use IEEE.numeric_std.all;
+
+
+entity MCU_PRJ_2021_TopLevel is
+    Port (
+        CLK100MHZ : in std_logic;
+        sw : in std_logic_vector(3 downto 0); --le switch détermine sur 4 bits la valeur de A et B qui sont égaux ici
+        btn : in std_logic_vector(3 downto 0); --le bouton permet de déterminer quelle fonction exécuter
+        led : out std_logic_vector(3 downto 0); --la led pour l'affichage des résultats avec 3 couleurs possibles sur chaque bit
+        led0_r : out std_logic; led0_g : out std_logic; led0_b : out std_logic;                
+        led1_r : out std_logic; led1_g : out std_logic; led1_b : out std_logic;
+        led2_r : out std_logic; led2_g : out std_logic; led2_b : out std_logic;                
+        led3_r : out std_logic; led3_g : out std_logic; led3_b : out std_logic
+    );
+end MCU_PRJ_2021_TopLevel;
+
+architecture MCU_PRJ_2021_TopLevel_Arch of MCU_PRJ_2021_TopLevel is
+	--les clk et reset des buffers seront associés à la clk100Mhz et le btn(0) pour le reset
+    component coeur 
+    Port ( 	
+          A : in std_logic_vector (3 downto 0); 
+          B : in std_logic_vector (3 downto 0); 
+          SR_IN_L : in std_logic;
+          SR_IN_R : in std_logic;
+          SEL_FCT : in std_logic_vector (3 downto 0); --selection sur 4bits
+          S : out std_logic_vector (7 downto 0);
+          SR_OUT_L : out std_logic;
+          SR_OUT_R : out std_logic
+	);
+    end component;
+    signal My_A, My_B, My_SEL_FCT : std_logic_vector(3 downto 0); 
+    signal My_SR_IN_R, My_SR_IN_L, My_SR_OUT_R, My_SR_OUT_L : std_logic;
+    signal My_S : std_logic_vector(7 downto 0); 
+ 
+    component UALCMDBuffers
+    Port (  	
+          clk : in std_logic;
+          reset : in std_logic;
+          buff_SEL_FCT_in : in std_logic_vector(3 downto 0);
+          buff_SEL_OUT_in : in std_logic_vector(1 downto 0);
+          buff_SEL_FCT_out : out std_logic_vector(3 downto 0);
+          buff_SEL_OUT_out : out std_logic_vector(1 downto 0)
+     );
+    end component;
+    signal My_buff_SEL_FCT_in, My_buff_SEL_FCT_out : std_logic_vector(3 downto 0); 
+    signal My_buff_SEL_OUT_in, My_buff_SEL_OUT_out : std_logic_vector(1 downto 0);  
+
+    component MemInstr 
+    Port ( 
+          clk : in std_logic;
+          reset : in std_logic;
+          Instr_out : out std_logic_vector (9 downto 0); --la sortie sur 10 bits contient SEL_FCT SEL_ROUTE et SEL_OUT
+          Instr_addr : in std_logic_vector (6 downto 0);
+          CE_Instr : in std_logic --pour l'activation
+    );
+    end component; 
+    signal My_INSTR_out : std_logic_vector (9 downto 0);
+    signal My_INSTR_addr : std_logic_vector (6 downto 0);
+    signal My_INSTR_CE : std_logic;
+    
+    component UALBuffers
+    Port ( 
+          clk : in std_logic;
+          reset : in std_logic;
+          buff_A_in : in std_logic_vector(3 downto 0);
+          buff_B_in : in std_logic_vector(3 downto 0);
+          mem_1_in : in std_logic_vector(7 downto 0);
+          mem_2_in : in std_logic_vector(7 downto 0);
+          buff_SR_IN_L_in : in std_logic;
+          buff_SR_IN_R_in : in std_logic;
+          CE_buff_A : in std_logic; --CE = cheap enabler = signal d'activation des buffers
+          CE_buff_B : in std_logic;
+          CE_mem_1 : in std_logic;
+          CE_mem_2 : in std_logic;
+          CE_SR_IN_L : in std_logic;
+          CE_SR_IN_R : in std_logic;
+          buff_A_out : out  std_logic_vector(3 downto 0);
+          buff_B_out : out  std_logic_vector(3 downto 0);
+          mem_1_out : out  std_logic_vector(7 downto 0);
+          mem_2_out : out  std_logic_vector(7 downto 0);
+          buff_SR_IN_L_out : out std_logic;
+          buff_SR_IN_R_out : out std_logic 
+    );
+    end component;
+    signal My_Buf_A_in, My_Buf_B_in, My_Buf_A_out, My_Buf_B_out : std_logic_vector (3 downto 0);
+    signal My_Mem_1_In, My_Mem_2_In, My_Mem_1_out, My_Mem_2_out : std_logic_vector (7 downto 0);
+    signal My_Buf_SR_IN_L_in, My_Buf_SR_IN_R_in, My_Buf_SR_IN_L_out, My_Buf_SR_IN_R_out : std_logic;
+    signal My_CE_Buf_A, My_CE_Buf_B, My_CE_Mem_1, My_CE_Mem_2, My_CE_SR_IN_L, My_CE_SR_IN_R : std_logic;
+    
+    component UALSELOUT
+    Port ( 
+          SEL_OUT : in std_logic_vector(1 downto 0); --permet la selection du resutat res_out
+          S : in std_logic_vector(7 downto 0);
+          mem_1_out : in std_logic_vector(7 downto 0);
+          mem_2_out : in std_logic_vector(7 downto 0);
+          res_out : out std_logic_vector(7 downto 0)
+    );
+    end component;
+    signal My_Res_out : std_logic_vector (7 downto 0);
+    signal My_SEL_OUT : std_logic_vector (1 downto 0);
+    --les autres signaux mem1, mem2, S on déjà été déclarés au-dessus 
+
+    component UALSELROUTE
+    Port (  
+          SEL_ROUTE : in std_logic_vector(3 downto 0); --permet la selection de la methode de stockage
+          S : in std_logic_vector(7 downto 0);
+          A : in std_logic_vector(3 downto 0);
+          B : in std_logic_vector(3 downto 0);
+          buff_A_out : in std_logic_vector(3 downto 0);
+          buff_B_out : in std_logic_vector(3 downto 0);
+          mem_1_out : in std_logic_vector(7 downto 0);
+          mem_2_out : in std_logic_vector(7 downto 0);
+          CE_buff_A : out std_logic;
+          CE_buff_B : out std_logic;
+          CE_mem_1 : out std_logic;
+          CE_mem_2 : out std_logic;
+          buff_A_in : out std_logic_vector(3 downto 0);
+          buff_B_in : out std_logic_vector(3 downto 0);
+          mem_1_in : out std_logic_vector(7 downto 0);
+          mem_2_in : out std_logic_vector(7 downto 0)          
+    );
+    end component;
+    signal My_SEL_ROUTE : std_logic_vector (3 downto 0);
+
+	
+    -- Pour activer les 3 fonctions avec le bouton
+    type Fonction is (Repos, F1, F2, F3); --on créer une structure de données énumérateur qui pourra prendre 4 valeurs/états
+    --ce qui indiquera quels opérations on été chargés pour la prochain front d'horloge
+    signal Current : Fonction := Repos; --on lui donne la valeur initiale du Repos c'est a dire aucune instruction déjà chargé pour le prochain front montant
+    signal Mycompteur : std_logic_vector (6 downto 0);  -- va de 0 à 127 indice de la memoire d'instruction
+
+begin
+--on connecte ensuite tous les composants afin d'obtenir notre UAL
+--signaux
+
+    MyUALCoeur : coeur 
+    port map  (
+          A => My_Buf_A_out,
+          B => My_Buf_B_out,
+          SR_IN_L => My_Buf_SR_IN_L_out,
+          SR_IN_R => My_Buf_SR_IN_R_out,
+          SEL_FCT => My_buff_SEL_FCT_out,
+          S => My_S,
+          SR_OUT_L => led3_b, 
+          SR_OUT_R => led2_b 
+	);--on affiche les retenues sur les leds bleues,comme demandé dans l'énoncé 
+    -- on a choisi les poids forts arbitrairement
+
+    
+     MyUALCMDBuffers : UALCMDBuffers
+     port map (  
+         clk => CLK100MHZ,
+         reset => btn(0),
+         buff_SEL_FCT_in => My_INSTR_out(9 downto 6), --les 4 bits de poids fort de la sortie de mem_intsr
+         buff_SEL_OUT_in => My_INSTR_out(1 downto 0), --les 2 bits de poids faibles les 4 du milieu sont pour SEL_ROUTE
+         buff_SEL_FCT_out => My_SEL_FCT,
+         buff_SEL_OUT_out => My_SEL_OUT
+     );
+     
+    MyMemInstr : MemInstr 
+    port map ( 
+        clk => CLK100MHZ,
+        reset => btn(0),
+        Instr_out => My_INSTR_out,
+        Instr_addr => Mycompteur, --le compteur qu'on a déclaré plus haut et qu'on utilisera dans le proccess pour se déplacer aux bonnes cases de la mémoire d'instruction
+        CE_Instr => '1' --on considère la mem_intsr active tout le temps
+    );
+     
+
+    MyUALBuffers : UALBuffers
+    port map ( 
+          clk => CLK100MHZ,
+          reset => btn(0),
+          buff_A_in => My_Buf_A_in,
+          buff_B_in => My_Buf_B_in,
+          mem_1_in => My_Mem_1_In,
+          mem_2_in => My_Mem_2_In,
+          buff_SR_IN_L_in => My_Buf_SR_IN_L_in,
+          buff_SR_IN_R_in => My_Buf_SR_IN_R_in,
+          CE_buff_A => My_CE_Buf_A,
+          CE_buff_B => My_CE_Buf_B,
+          CE_mem_1 => My_CE_Mem_1,
+          CE_mem_2 => My_CE_Mem_2,
+          CE_SR_IN_L => '1', --tous le temps actifs
+          CE_SR_IN_R => '1',
+          buff_A_out => My_Buf_A_out,
+          buff_B_out => My_Buf_B_out,
+          mem_1_out => My_Mem_1_out,
+          mem_2_out => My_Mem_2_out,
+          buff_SR_IN_L_out => My_Buf_SR_IN_L_out,
+          buff_SR_IN_R_out => My_Buf_SR_IN_R_out
+        );
+        
+
+       MyUALSELOUT : UALSELOUT
+       port map ( 
+           SEL_OUT => My_SEL_OUT,
+           S => My_S,
+           mem_1_out => My_Mem_1_out,
+           mem_2_out => My_Mem_2_out,
+           res_out => My_Res_out
+       );
+   
+       MyUALSELROUTE : UALSELROUTE
+       port map ( 
+          SEL_ROUTE => My_INSTR_out(5 downto 2), --les 4 bits après les 4 bits de poids fort
+          S => My_S,
+          A => sw, --sur la carte arty on a seulement 4 switchs donc on est obligés d'avoir A=B
+          B => sw,
+          buff_A_out => My_Buf_A_out,
+          buff_B_out => My_Buf_B_out,
+          mem_1_out => My_Mem_1_out,
+          mem_2_out => My_Mem_2_out,
+          CE_buff_A => My_CE_Buf_A,
+          CE_buff_B => My_CE_Buf_B,
+          CE_mem_1 => My_CE_Mem_1,
+          CE_mem_2 => My_CE_Mem_2,
+          buff_A_in => My_Buf_A_in,
+          buff_B_in => My_Buf_B_in,
+          mem_1_in => My_Mem_1_In,
+          mem_2_in => My_Mem_2_In 
+       );
+       
+--initialisation de certaines valeurs par défaut
+    My_Buf_SR_IN_L_in <= '0'; --au début il n'y a pas eu de décalage donc pas de retenue
+    My_Buf_SR_IN_R_in <= '0';
+    --resultat sur 8 bits on met 4 bits sur les leds du dessus
+    led <= My_Res_out(7 downto 4);
+    -- et les 4 autres bits de poids faibles sur les leds du dessous en rouge
+    led0_r <= My_Res_Out(0);               
+    led1_r <= My_Res_Out(1); 
+    led2_r <= My_Res_Out(2); 
+    led3_r <= My_Res_Out(3);  
+    
+    --la led verte de poids faible sera utilisée pour indiquer qaund le résultat de nos opérations sera affiché
+    led1_g <= '0';
+    led2_g <= '0';
+    led3_g <= '0';
+    --on utilise les 2 leds bleues de poids fort pour les retenues
+    --les 2 poids faibles ne seront jamais utilisés
+    led0_b <= '0';  
+    led1_b <= '0'; 
+
+
+    
+-- Gestion des 3 algorithmes
+--btn(0) doit reset
+-- Si on appuie sur btn(1) doit donner RES_OUT_1
+-- Si on appuie sur btn(2) doit donner RES_OUT_2
+-- Si on appuie sur btn(3) doit donner RES_OUT_3
+MyProc : process (btn(3 downto 0), CLK100MHZ)
+begin
+    if(btn(0) = '1') then --on remet à 0 le compteur qui correspond à l'indice de la case dans la mémoire d'instruction
+        Mycompteur <= (others => '0');
+        led0_g <= '0'; --quand le résultat sera dispo cette led sera allumée en vert
+        Current <= Repos;
+    elsif rising_edge(CLK100MHZ) then
+        case Current is
+            when Repos => --quand c'est encore au repos on doit charger les instructions
+            --afin de savoir qu'elle fonction exécuter au prochain front montant
+                if(btn(3) = '1') then
+                    Mycompteur <= "1000000"; --les instructions se trouvent à la case 64
+                    Current <= F3;
+                    led0_g <= '0';
+                elsif (btn(2) = '1') then
+                    Mycompteur <= "0100000"; --case 32
+                    Current <= F2;
+                    led0_g <= '0';
+                elsif (btn(1) = '1') then
+                    Mycompteur <= (others => '0'); --case 0
+                    Current <= F1;
+                    led0_g <= '0';
+                else --sinon si btn(0) on ne charge rien, on reste au repos
+                    Mycompteur <= (others => '0');
+                    Current <= Repos;
+                    led0_g <= '0';
+                end if;
+            when F1 => --cela veut dire qu'on n'est plus au repos on a déjà chargé des instructions
+            --pour l'une des 3 fonctions
+                if(btn(1) = '1') then
+                    Current <= F1;
+                    if Mycompteur = 3 then --on a fini les 4 instructions
+                        Mycompteur <= Mycompteur;
+                        led0_g <= '1'; --on allume la led en vert pour dire que le resultat est affiché
+                    else --sinon on incrémente pour passer à la ligne suivante dans la mem d'instruction
+                        Mycompteur <= Mycompteur + 1;
+                        led0_g <= '0';
+                    end if;
+                else
+                    Mycompteur <= (others => '0'); --on reset tout pour le chargement des prochaines instructions
+                    Current <= Repos; 
+                    led0_g <= '0';    
+                end if;                
+            when F2 =>
+                if(btn(2) = '1') then
+                    Current <= F2;
+                    if Mycompteur = 37 then --on commence case 32 et on s'arrête case 37
+                        Mycompteur <= Mycompteur;
+                        led0_g <= '1'; --res sipo
+                    else
+                        Mycompteur <= Mycompteur + 1;
+                        led0_g <= '0';
+                    end if;
+                else
+                    Mycompteur <= (others => '0'); --on reset tout pour le chargement des prochaines instructions
+                    Current <= Repos; 
+                    led0_g <= '0';  
+                end if;
+            when F3 =>
+                if(btn(3) = '1') then
+                    Current <= F3;
+                    if Mycompteur = 73 then --la fonction 3 est de la case 64 à 73
+                        Mycompteur <= Mycompteur;
+                        led0_g <= '1'; --res dispo
+                    else
+                        Mycompteur <= Mycompteur + 1;
+                        led0_g <= '0';
+                    end if;
+                else
+                    Mycompteur <= (others => '0'); --on reset tout pour le chargement des prochaines instructions
+                    Current <= Repos; 
+                    led0_g <= '0';  
+                end if;
+            
+            when others =>  --au cas ou on reset dans tous les autres cas
+                    Mycompteur <= (others => '0');
+                    Current <= Repos; 
+                    led0_g <= '0';  
+        end case;
+    end if;    
+end process;
+ 
+end MCU_PRJ_2021_TopLevel_Arch;

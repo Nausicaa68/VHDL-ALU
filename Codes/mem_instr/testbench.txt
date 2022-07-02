@@ -1,0 +1,101 @@
+-- Code your testbench here
+library IEEE;
+use IEEE.std_logic_1164.all;
+use IEEE.numeric_std.all;
+
+-- Déclaration d'une entité pour la simulation sans ports d'entrées et de sorties
+entity MemInstr_testbench is
+
+end MemInstr_testbench;
+
+architecture MemInstr_testbench_Arch of MemInstr_testbench is
+	
+    -- Déclaration du composant à tester -> renvoie vers l'entité MemInstr !
+    component MemInstr is
+    port(
+      clk : in std_logic;
+      reset : in std_logic;
+      Instr_out : out std_logic_vector (9 downto 0);
+      Instr_addr : in std_logic_vector (6 downto 0);
+      CE_Instr : in std_logic
+    );
+    end component;
+    
+    -- Déclaration de la constante permettant de définir la période de l'horloge
+    constant PERIOD : time := 100 us;
+    
+    -- Déclaration des signaux internes à l'architecture pour réaliser les simulations
+    signal Instr_addr_sim : std_logic_vector(6 downto 0) := (others => '0');
+    signal Instr_out_sim : std_logic_vector(9 downto 0) := (others => '0');
+    signal clk_sim, reset_sim, CE_Instr_sim : std_logic := '0';
+
+begin
+
+	-- Instanciation du composant à tester
+    MyMemInstrunderTest : MemInstr
+    -- raccordement des ports du composant aux signaux dans l'architecture 
+    port map (
+            clk => clk_sim,
+            reset => reset_sim,
+            Instr_out => Instr_out_sim,
+            Instr_addr => Instr_addr_sim,
+            CE_Instr => CE_Instr_sim
+    );
+    
+    
+    -- Définition du process permettant de générer l'horloge pour le test 
+    My_clock_Proc : process -- pas de liste de sensibilité
+    begin
+    	clk_sim <= '0';
+        wait for PERIOD/2;
+        clk_sim <= '1';
+        wait for PERIOD/2;
+        
+        if now = 20*PERIOD then
+        	wait;
+        end if;
+    end process;
+
+    -- Définition du process permettant de faire évoluer les signaux d'entrée du composant à tester
+    MyStimulus_Proc : process -- pas de liste de sensibilité
+    begin
+    	
+        wait for 1 * PERIOD;
+        --Test pour la multiplication A*B normalement les 4 premières case_mem
+        --de Mem_Instr
+        --CE actif pas de reset
+        CE_Instr_sim <= '1';
+        reset_sim <= '0';
+        Instr_addr_sim <= "0000000";
+        wait for 1 * PERIOD;
+        report "reset = " & std_logic'image(reset_sim) & " | CE_Instr = " & std_logic'image(CE_Instr_sim) & " | Instr_addr = " & integer'image(to_integer(unsigned(Instr_addr_sim))) & " | SORTIE = " & integer'image(to_integer(unsigned(Instr_out_sim)));
+        WAIT for 1 * PERIOD;
+        
+        Instr_addr_sim <= "0000001";
+        wait for 1 * PERIOD;
+        report "reset = " & std_logic'image(reset_sim) & " | CE_Instr = " & std_logic'image(CE_Instr_sim) & " | Instr_addr = " & integer'image(to_integer(unsigned(Instr_addr_sim))) & " | SORTIE = " & integer'image(to_integer(unsigned(Instr_out_sim)));
+        WAIT for 1 * PERIOD;
+        
+        Instr_addr_sim <= "0000010";
+        wait for 1 * PERIOD;
+        report "reset = " & std_logic'image(reset_sim) & " | CE_Instr = " & std_logic'image(CE_Instr_sim) & " | Instr_addr = " & integer'image(to_integer(unsigned(Instr_addr_sim))) & " | SORTIE = " & integer'image(to_integer(unsigned(Instr_out_sim)));
+        WAIT for 1 * PERIOD;
+        
+        
+        Instr_addr_sim <= "0000011";
+        wait for 1 * PERIOD;
+        report "reset = " & std_logic'image(reset_sim) & " | CE_Instr = " & std_logic'image(CE_Instr_sim) & " | Instr_addr = " & integer'image(to_integer(unsigned(Instr_addr_sim))) & " | SORTIE = " & integer'image(to_integer(unsigned(Instr_out_sim)));
+        WAIT for 1 * PERIOD;
+        
+        
+        --Test sans activation le resultat ne devrait pas changer par rapport au dernier report
+        CE_Instr_sim <= '0';
+        Instr_addr_sim <= "0000010";
+        wait for 1 * PERIOD;
+        report "reset = " & std_logic'image(reset_sim) & " | CE_Instr = " & std_logic'image(CE_Instr_sim) & " | Instr_addr = " & integer'image(to_integer(unsigned(Instr_addr_sim))) & " | SORTIE = " & integer'image(to_integer(unsigned(Instr_out_sim)));
+        WAIT for 1 * PERIOD;
+               
+        report "Test ok (no assert ...)";
+        wait;
+    end process; 
+end MemInstr_testbench_Arch;  
