@@ -9,7 +9,7 @@ L'unité arithmétique et logique est l'organe de l'ordinateur chargé d'effectu
 
 ![image](https://user-images.githubusercontent.com/58084848/177005766-aec36327-d121-44ec-8c13-8b4eb57c7b92.png)
 
-Notre cœur réalise les 16 fonctions suivantes, pilotées par la valeur de SEL_FCT sur 4 bits.
+Le cœur réalise les 16 fonctions suivantes, pilotées par la valeur de SEL_FCT sur 4 bits.
 
 ![image](https://user-images.githubusercontent.com/58084848/177005748-21aa0b1e-e963-4d03-a769-5295e01fa8e5.png)
 
