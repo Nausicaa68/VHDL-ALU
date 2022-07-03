@@ -3,13 +3,13 @@ Modélisation d'une unité arithmétique et logique en VHDL
 
 Projet réalisé en duo, avec [Jérémy Grelaud](https://github.com/jeremyGrelaud)
 
-## UAL - Unité aithmétique et logique
+## UAL - Unité arithmétique et logique
 
 L'unité arithmétique et logique est l'organe de l'ordinateur chargé d'effectuer les calculs. Le plus souvent, l'UAL est incluse dans l'unité centrale de traitement ou le microprocesseur.
 
 ![image](https://user-images.githubusercontent.com/58084848/177005766-aec36327-d121-44ec-8c13-8b4eb57c7b92.png)
 
-Le cœur réalise les 16 fonctions suivantes, pilotées par la valeur de SEL_FCT sur 4 bits.
+Le cœur réalise les 16 fonctions suivantes, pilotée par la valeur de SEL_FCT sur 4 bits.
 
 ![image](https://user-images.githubusercontent.com/58084848/177005748-21aa0b1e-e963-4d03-a769-5295e01fa8e5.png)
 
@@ -17,12 +17,12 @@ Le cœur réalise les 16 fonctions suivantes, pilotées par la valeur de SEL_FCT
 ## Liste des entités de l'UAL
 
 #### Coeur : 
-L'entité qui permet de faire les calculs en prenant deux entrées 4 bits (A et B) et deux retenues d'entrées 1 bit (SR_IN_L et SR_IN_R ).
-Il y a le SEL_FCT sur 4 bits (signal de sélection) qui permet de déterminer laquelle des 16 opérations réaliser. En ce qui concerne les sorties, on a le S sur 8 bits qui stocke le résultat de l'opération. Et enfin il y a deux retenues de sorties 1 bit SR_OUT_L et SR_OUT_R.
+C'est l'entité qui permet de faire les calculs, en prenant deux entrées 4 bits (A et B) et deux retenues d'entrées 1 bit (SR_IN_L et SR_IN_R ).
+Il y a le SEL_FCT sur 4 bits (signal de sélection) qui permet de déterminer laquelle des 16 opérations sera réalisé. En ce qui concerne les sorties, on a le S sur 8 bits qui stocke le résultat de l'opération. Et enfin il y a deux retenues de sorties 1 bit SR_OUT_L et SR_OUT_R.
 
 
 #### UALBuffers : 
-Cette entité permet de modéliser tous les buffers/mémoires de l'UAL permettant de stocker les valeurs et les résultats des calculs intermédiaires avant d'afficher le résultat en sortie de l'UAL. Il y a donc autant d'entrées que de sorties chacunes liées par 2 et de même taille. Il y a aussi un signal d'activation associé à chaque buffer (CE= cheap enabler) permettant de savoir quand on doit garder la valeur déjà stockée en mémoire ou la remplacer par la nouvelle entrée. Il y a aussi une horloge et un reset permettant de vider toutes les valeurs présentent dans les mémoires.
+Cette entité permet de modéliser tous les buffers/mémoires de l'UAL, permettant de stocker les valeurs et les résultats des calculs intermédiaires avant d'afficher le résultat en sortie de l'UAL. Il y a donc autant d'entrées que de sorties, chacunes liées par 2 et de même taille. Il y a aussi un signal d'activation associé à chaque buffer (CE = cheap enabler) permettant de savoir quand on doit garder la valeur déjà stockée en mémoire ou la remplacer par la nouvelle entrée. Il y a aussi une horloge et un reset permettant de vider toutes les valeurs présentent dans les mémoires.
 
 
 #### UALCMDBuffers : 
